@@ -1,0 +1,4 @@
+feat: this is a simple commit message
+
+This is the body, it is short and simple. It contains
+no nested information, its a flat blob of text. It has no footer
