@@ -1,0 +1,53 @@
+{
+  "name": "conventional-commit-parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap",
+    "tap": "tap",
+    "lint": "eslint ./",
+    "lint:fix": "npm run lint -- --fix",
+    "generate": "scripts/generate.js",
+    "generate:diagrams": "node scripts/generate.js diagrams",
+    "generate:all": "node scripts/generate.js all"
+  },
+  "tap": {
+    "browser": false,
+    "jobs": 10,
+    "show-full-coverage": true,
+    "statements": 95,
+    "branches": 95,
+    "functions": 95,
+    "lines": 95,
+    "timeout": 180,
+    "coverage-report": [
+      "text",
+      "text-summary",
+      "lcov",
+      "json",
+      "json-summary",
+      "html"
+    ],
+    "output-file": ".tap-out",
+    "serial": [],
+    "files": [
+      "test/unit",
+      "test/integration"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "commonjs",
+  "dependencies": {
+    "chevrotain": "^12.0.0",
+    "unist-builder": "^4.0.0",
+    "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.4.0",
+    "eslint-config-logdna": "^8.0.1",
+    "tap": "^21.7.4"
+  }
+}
