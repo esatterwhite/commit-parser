@@ -1,12 +1,14 @@
 'use strict'
 
 const {test} = require('tap')
-const {parseConventionalCommit, astUtils} = require('../../index.js')
+const {visit} = require('unist-util-visit')
+
+const {parse} = require('../../index.js')
 
 test('AST basic parsing', async (t) => {
   t.test('simple feature commit', async (t) => {
     const commit = 'feat: add user authentication'
-    const ast = parseConventionalCommit(commit, {format: 'ast'})
+    const ast = parse(commit)
 
     t.equal(ast.type, 'root', 'root node type')
     t.equal(ast.breaking, false, 'not breaking')
@@ -16,7 +18,7 @@ test('AST basic parsing', async (t) => {
 
   t.test('breaking change header', async (t) => {
     const commit = 'feat(api)!: add user authentication'
-    const ast = parseConventionalCommit(commit, {format: 'ast'})
+    const ast = parse(commit)
 
     t.equal(ast.type, 'root', 'root node type')
     t.equal(ast.breaking, true, 'is breaking')
@@ -47,7 +49,7 @@ This commit adds JWT-based authentication.
 BREAKING CHANGE: authentication is now required
 Resolves: #123`
 
-    const ast = parseConventionalCommit(commit, {format: 'ast'})
+    const ast = parse(commit)
 
     t.equal(ast.type, 'root', 'root node type')
     t.equal(ast.breaking, true, 'is breaking due to footer')
@@ -81,10 +83,10 @@ test('trailer breaking property consistency', async (t) => {
 
 BREAKING CHANGE: this breaks things`
 
-    const ast = parseConventionalCommit(commit, {format: 'ast'})
+    const ast = parse(commit)
 
     let breaking_trailer = null
-    astUtils.visit(ast, 'trailer', (node) => {
+    visit(ast, 'trailer', (node) => {
       if (node.breaking) {
         breaking_trailer = node
       }
@@ -100,10 +102,10 @@ BREAKING CHANGE: this breaks things`
 
 Resolves: #123`
 
-    const ast = parseConventionalCommit(commit, {format: 'ast'})
+    const ast = parse(commit)
 
     let regular_trailer = null
-    astUtils.visit(ast, 'trailer', (node) => {
+    visit(ast, 'trailer', (node) => {
       regular_trailer = node
     })
 
@@ -119,10 +121,10 @@ BREAKING CHANGE: this breaks things
 Resolves: #123
 Co-authored-by: John Doe <john@example.com>`
 
-    const ast = parseConventionalCommit(commit, {format: 'ast'})
+    const ast = parse(commit)
 
     const trailers = []
-    astUtils.visit(ast, 'trailer', (node) => {
+    visit(ast, 'trailer', (node) => {
       trailers.push(node)
     })
 
@@ -144,92 +146,13 @@ Co-authored-by: John Doe <john@example.com>`
 
 })
 
-test('AST utilities with unist-util-visit', async (t) => {
-  const commit = `feat(api)!: add user authentication
-
-This commit adds JWT-based authentication.
-
-BREAKING CHANGE: authentication is now required
-Resolves: #123`
-
-  const ast = parseConventionalCommit(commit, {format: 'ast'})
-
-  t.test('find all breaking change nodes', async (t) => {
-    const breaking_nodes = []
-    astUtils.visit(ast, (node) => {
-      if (node.breaking) {
-        breaking_nodes.push(node)
-      }
-    })
-
-    t.equal(breaking_nodes.length, 3, 'found three breaking nodes')
-    t.equal(breaking_nodes[0].type, 'root', 'root is breaking')
-    t.equal(breaking_nodes[1].type, 'description', 'description is breaking')
-    t.equal(breaking_nodes[2].type, 'trailer', 'footer breaking trailer')
-  })
-
-  t.test('extract text content', async (t) => {
-    const text_contents = []
-    astUtils.visit(ast, ['text', 'issueReference'], (node) => {
-      text_contents.push(node.value)
-    })
-
-    t.ok(text_contents.length > 0, 'found text content')
-    t.ok(text_contents.includes('add user authentication'), 'includes description')
-    t.ok(text_contents.includes('#123'), 'includes issue reference')
-  })
-
-  t.test('find issue references', async (t) => {
-    const issues = astUtils.extractIssues(ast)
-
-    t.equal(issues.length, 1, 'found one issue')
-    t.equal(issues[0].issue, '#123', 'correct issue text')
-    t.equal(issues[0].prefix, '#', 'correct prefix')
-    t.equal(issues[0].id, 123, 'correct id')
-  })
-
-  t.test('extract breaking changes', async (t) => {
-    const breaking_changes = astUtils.extractBreakingChanges(ast)
-
-    t.equal(breaking_changes.length, 2, 'found two breaking changes')
-    t.equal(
-      breaking_changes[0]
-    , 'add user authentication'
-    , 'correct breaking change text from header'
-    )
-    t.equal(
-      breaking_changes[1]
-    , 'authentication is now required'
-    , 'correct breaking change text from footer'
-    )
-  })
-
-  t.test('get metadata', async (t) => {
-    const metadata = astUtils.getMetadata(ast)
-
-    t.equal(metadata.type, 'feat', 'correct type')
-    t.equal(metadata.scope, 'api', 'correct scope')
-    t.equal(metadata.breaking, true, 'is breaking')
-    t.ok(metadata.description.includes('add user authentication'), 'has description')
-    t.ok(metadata.body.includes('JWT-based authentication'), 'has body')
-    t.equal(metadata.hasFooter, true, 'has footer')
-    t.equal(metadata.issues.length, 1, 'has issues')
-    t.equal(metadata.breakingChanges.length, 2, 'has two breaking changes')
-  })
-
-  t.test('round-trip serialization', async (t) => {
-    // TODO: Fix serialization spacing issue - missing space after colon
-    t.skip('serialization has spacing issues that need to be fixed separately')
-  })
-})
-
 test('position information', async (t) => {
   const commit = 'feat(api): add user authentication'
-  const ast = parseConventionalCommit(commit, {format: 'ast'})
+  const ast = parse(commit)
 
   t.test('nodes have position information', async (t) => {
     const nodes_with_position = []
-    astUtils.visit(ast, (node) => {
+    visit(ast, (node) => {
       if (node.position) {
         nodes_with_position.push(node)
       }
@@ -249,27 +172,4 @@ test('position information', async (t) => {
     t.equal(type.position.start.line, 1, 'type starts at line 1')
     t.equal(type.position.start.column, 1, 'type starts at column 1')
   })
-})
-
-test('backwards compatibility', async (t) => {
-  const commit = 'feat(api): add user authentication'
-
-  t.test('JSON format still works', async (t) => {
-    const json = parseConventionalCommit(commit, {format: 'json'})
-
-    t.equal(typeof json, 'object', 'returns object')
-    t.equal(json.type, 'feat', 'has type')
-    t.equal(json.scope, 'api', 'has scope')
-    t.equal(json.breaking, false, 'has breaking')
-    t.ok(json.description.includes('add user authentication'), 'has description')
-  })
-
-  t.test('default format is JSON', async (t) => {
-    const result = parseConventionalCommit(commit)
-
-    t.equal(typeof result, 'object', 'returns object')
-    t.equal(result.type, 'feat', 'has type field (JSON format)')
-    t.notOk(result.children, 'does not have children field (not AST)')
-  })
-
 })

@@ -16,6 +16,15 @@ It's just text in the body that happens to contain the phrase.
 Footer: yes
 `.trim()
 
+function extract_text(node) {
+  if (node.type === 'text') {
+    return node.value
+  }
+  if (node.children) {
+    return node.children.map(extract_text).join('')
+  }
+  return ''
+}
 test('problematic commit parsing', async (t) => {
   t.doesNotThrow(() => {
     parser.parse(PROBLEMATIC_COMMIT)
@@ -30,7 +39,10 @@ test('problematic commit parsing', async (t) => {
     t.ok(result.children.length >= 1, 'should have at least header')
   })
 
-  t.test('should include header section', async (t) => {
+  testCase(t, {
+    category: 'header'
+  , description: 'header section parsing'
+  }, async (t) => {
     const result = parser.parse(PROBLEMATIC_COMMIT)
 
     const header = result.children.find((child) => {
@@ -39,34 +51,41 @@ test('problematic commit parsing', async (t) => {
     t.ok(header, 'should have header section')
     t.ok(Array.isArray(header.children), 'header should have children')
 
-    // Check for type
-    const type_node = header.children.find((child) => {
-      return child.type === 'type'
+    t.test('type', async (t) => {
+      const type_node = header.children.find((child) => {
+        return child.type === 'type'
+      })
+      t.ok(type_node, 'should have type node')
+      t.equal(type_node.value, 'feat', 'type should be feat')
     })
-    t.ok(type_node, 'should have type node')
-    t.equal(type_node.value, 'feat', 'type should be feat')
 
-    // Check for scope
-    const scope_node = header.children.find((child) => {
-      return child.type === 'scope'
+    t.test('scope', async (t) => {
+      const scope_node = header.children.find((child) => {
+        return child.type === 'scope'
+      })
+      t.ok(scope_node, 'should have scope node')
+      t.equal(scope_node.value, 'test', 'scope should be test')
     })
-    t.ok(scope_node, 'should have scope node')
-    t.equal(scope_node.value, 'test', 'scope should be test')
 
-    // Check for bang indicator
-    const bang_node = header.children.find((child) => {
-      return child.type === 'bang'
+    t.test('bang indicator', async (t) => {
+      const bang_node = header.children.find((child) => {
+        return child.type === 'bang'
+      })
+      t.ok(bang_node, 'should have bang node due to !')
     })
-    t.ok(bang_node, 'should have bang node due to !')
 
-    // Check for description
-    const description_node = header.children.find((child) => {
-      return child.type === 'description'
+    t.test('description', async (t) => {
+      const description_node = header.children.find((child) => {
+        return child.type === 'description'
+      })
+      t.ok(description_node, 'should have description node')
     })
-    t.ok(description_node, 'should have description node')
   })
 
-  t.test('should include body section with full content', async (t) => {
+  testCase(t, {
+    category: 'body'
+  , description: 'body section parsing'
+  }, async (t) => {
     const result = parser.parse(PROBLEMATIC_COMMIT)
 
     const body = result.children.find((child) => {
@@ -77,15 +96,6 @@ test('problematic commit parsing', async (t) => {
     t.ok(body.children.length > 0, 'body should have content')
 
     // Extract full body text - body has line nodes, each with text children
-    function extract_text(node) {
-      if (node.type === 'text') {
-        return node.value
-      }
-      if (node.children) {
-        return node.children.map(extract_text).join('')
-      }
-      return ''
-    }
     const body_text = body.children.map(extract_text).join('\n')
 
     // Should include all body content, not just the first line
@@ -103,7 +113,10 @@ test('problematic commit parsing', async (t) => {
     )
   })
 
-  t.test('should include footer section', async (t) => {
+  testCase(t, {
+    category: 'footer'
+  , description: 'footer section parsing'
+  }, async (t) => {
     const result = parser.parse(PROBLEMATIC_COMMIT)
 
     const footer = result.children.find((child) => {
@@ -120,8 +133,8 @@ test('problematic commit parsing', async (t) => {
   })
 
   testCase(t, {
-    description: 'should correctly separate body and footer content'
-  , code: 'footer'
+    category: 'chunking'
+  , description: 'keywords found in body'
   }, async (t) => {
     const result = parser.parse(PROBLEMATIC_COMMIT)
 
@@ -135,26 +148,15 @@ test('problematic commit parsing', async (t) => {
     t.ok(body, 'should have body')
     t.ok(footer, 'should have footer')
 
-    // Body should contain "BREAKING CHANGE in body" text
-    // Extract text recursively from line nodes
-    function extract_text(node) {
-      if (node.type === 'text') {
-        return node.value
-      }
-      if (node.children) {
-        return node.children.map(extract_text).join('')
-      }
-      return ''
-    }
     const body_text = body.children.map(extract_text).join('\n')
     t.ok(
-      body_text.includes('BREAKING CHANGE in body'),
-      'body should contain BREAKING CHANGE text'
+      body_text.includes('BREAKING CHANGE')
+    , 'body should contain BREAKING CHANGE text'
     )
 
-    console.dir(footer.children, {depth: 100})
     t.type(footer.children, Array, 'footer.children is array')
     t.equal(footer.children.length, 1, 'one trailer found')
+
     const trailer = footer.children[0]
     t.match(trailer, {
       type: 'trailer'

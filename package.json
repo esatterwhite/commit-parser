@@ -8,9 +8,7 @@
     "tap": "tap",
     "lint": "eslint ./",
     "lint:fix": "npm run lint -- --fix",
-    "generate": "scripts/generate.js",
-    "generate:diagrams": "node scripts/generate.js diagrams",
-    "generate:all": "node scripts/generate.js all"
+    "generate": "scripts/generate.js"
   },
   "tap": {
     "browser": false,
