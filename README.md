@@ -37,14 +37,13 @@ The generated `conventional-commit-grammar-diagrams.html` file will show interac
 - `npm test` - Run tests
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint errors
-- `npm run diagrams` - Generate railroad diagrams
-- `npm run diagrams:open` - Generate and open diagrams
+- `npm run geenrate` - Generate railroad diagrams
 
 ## Development
 
 The parser is built using:
 - [Chevrotain](https://chevrotain.io/) - Parser building toolkit
-- [Tap](https://node-tap.org/) - Testing framework
+- [unist](https://github.com/syntax-tree/unist) - universal syntax tree
 
 See the `lib/` directory for implementation details:
 - `lib/parser.js` - Main parser grammar
