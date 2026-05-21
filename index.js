@@ -1,16 +1,9 @@
 'use strict'
 
-const {parseCommitMessage} = require('./lib/parse-chunks.js')
-const ConventionalCommitLexer = require('./lib/lexer.js')
-const {ConventionalCommitParser} = require('./lib/parser.js')
-const ConventionalCommitVisitor = require('./lib/visitor.js')
+const CommitParser = require('./lib/parse-chunks.js')
 
 module.exports = {
   parse: parse
-, ConventionalCommitLexer: ConventionalCommitLexer
-, ConventionalCommitParser: ConventionalCommitParser
-, ConventionalCommitVisitor: ConventionalCommitVisitor
-, node: require('./lib/cast/node/index.js')
 }
 
 /**
@@ -28,6 +21,6 @@ function parse(commit_message, options = {}) {
   }
 
   // Use the new pre-chunking approach to avoid "Redundant input, expecting EOF" errors
-  return parseCommitMessage(commit_message, config)
+  return CommitParser.parse(commit_message, config)
 }
 

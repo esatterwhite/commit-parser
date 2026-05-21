@@ -2,7 +2,6 @@
 
 const {test} = require('tap')
 const {visit} = require('unist-util-visit')
-
 const {parse} = require('../../index.js')
 
 test('AST basic parsing', async (t) => {

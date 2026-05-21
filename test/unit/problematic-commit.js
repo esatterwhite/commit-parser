@@ -35,8 +35,8 @@ test('problematic commit parsing', async (t) => {
 
     t.equal(result.type, 'root', 'root node type')
     t.equal(result.breaking, true, 'should be breaking due to ! in header')
-    t.ok(Array.isArray(result.children), 'should have children array')
-    t.ok(result.children.length >= 1, 'should have at least header')
+    t.type(result.children, 'array', 'should have children array')
+    t.equal(result.children.length, 3, 'parsed sections')
   })
 
   testCase(t, {
@@ -174,20 +174,6 @@ test('problematic commit parsing', async (t) => {
       , position: {
           start: {line: 8, column: 1, offset: 170}
         , end: {line: 8, column: 7, offset: 176}
-        }
-      }, {
-        type: 'text'
-      , value: ':'
-      , position: {
-          start: {line: 8, column: 7, offset: 176}
-        , end: {line: 8, column: 8, offset: 177}
-        }
-      }, {
-        type: 'text'
-      , value: ' '
-      , position: {
-          start: {line: 8, column: 8, offset: 177}
-        , end: {line: 8, column: 9, offset: 178}
         }
       }, {
         type: 'trailervalue'

@@ -3,6 +3,8 @@
 const fs = require('node:fs')
 const path = require('node:path')
 const {test} = require('tap')
+const {select, selectAll} = require('unist-util-select')
+const testCase = require('../common/test-case.js')
 const parser = require('../../index.js')
 
 // Load the fixture
@@ -23,41 +25,50 @@ test('free-form body parsing', async (t) => {
 
     t.equal(result.type, 'root', 'root node type')
     t.equal(result.breaking, true, 'should be breaking due to ! in header')
-    t.ok(Array.isArray(result.children), 'should have children array')
+    t.type(result.children, 'array', 'should have children array')
     t.equal(result.children.length, 3, 'should have header, body, and footer')
   })
 
-  t.test('should include header section', async (t) => {
+  testCase(t, {
+    category: 'header'
+  , description: 'conventional commit parser output'
+  }, async (t) => {
     const result = parser.parse(COMMIT)
 
-    const header = result.children.find((child) => {
-      return child.type === 'header'
-    })
+    const header = select('header', result)
     t.ok(header, 'should have header section')
     t.ok(Array.isArray(header.children), 'header should have children')
 
-    // Check for type
-    const type_node = header.children.find((child) => {
-      return child.type === 'type'
+    t.test('type', async (t) => {
+      // Check for type
+      const type_node = select('type', header)
+      t.ok(type_node, 'should have type node')
+      t.equal(type_node.value, 'feat', 'type should be feat')
     })
-    t.ok(type_node, 'should have type node')
-    t.equal(type_node.value, 'feat', 'type should be feat')
 
-    // Check for bang indicator
-    const bang_node = header.children.find((child) => {
-      return child.type === 'bang'
+    t.test('bang', async (t) => {
+      // Check for bang indicator
+      const bang = select('bang', header)
+      t.ok(bang, 'should have bang node due to !')
     })
-    t.ok(bang_node, 'should have bang node due to !')
 
+    t.test('description', async (t) => {
     // Check for description
-    const description_node = header.children.find((child) => {
-      return child.type === 'description'
+      const description = select('description', header)
+      t.ok(description, 'should have description node')
+
+      t.match(select('text', description), {
+        type: 'text'
+      , value: 'test'
+      , position: Object
+      }, 'description should be test')
     })
-    t.ok(description_node, 'should have description node')
-    t.equal(description_node.value, 'test', 'description should be test')
   })
 
-  t.test('should include body section with all free-form content', async (t) => {
+  testCase(t, {
+    category: 'body'
+  , description: 'parser output'
+  }, async (t) => {
     const result = parser.parse(COMMIT)
 
     const body = result.children.find((child) => {
@@ -65,170 +76,74 @@ test('free-form body parsing', async (t) => {
     })
     t.ok(body, 'should have body section')
     t.ok(Array.isArray(body.children), 'body should have children')
-    t.ok(body.children.length > 0, 'body should have content')
+    t.equal(body.children.length, 4, 'number of lines parsed')
 
-    // Extract full body text - body has line nodes, each with text children
-    function extract_text(node) {
-      if (node.type === 'text') {
-        return node.value
-      }
-      if (node.type === 'issueReference') {
-        return node.value
-      }
-      if (node.children) {
-        return node.children.map(extract_text).join('')
-      }
-      return ''
-    }
-    const body_text = body.children.map(extract_text).join('\n').trim()
-
-    // The body should contain all these lines with special characters:
-    // - "one(four): test" - contains parentheses and colon
-    // - "two: #100" - contains colon and hash
-    // - "three!" - contains exclamation mark
-
-    t.ok(
-      body_text.includes('one(four): test'),
-      'should include line with parentheses and colon'
-    )
-    t.ok(
-      body_text.includes('two: #100'),
-      'should include line with colon and hash'
-    )
-    t.ok(
-      body_text.includes('three!'),
-      'should include line with exclamation mark'
-    )
-
-    // Verify the body has 4 line nodes (3 content + 1 blank)
-    const line_nodes = body.children.filter((child) => {
-      return child.type === 'line'
+    const text = selectAll('line text', body).map((node) => {
+      return node.value
     })
-    t.equal(
-      line_nodes.length,
-      4,
-      'should have 4 line nodes in body (including blank line)'
-    )
+
+    t.match(text, [
+      'one(four): test'
+    , 'two: #100'
+    , ''
+    , 'three!'
+    ], 'body line > text values')
+
   })
 
-  t.test('should include footer section', async (t) => {
+  testCase(t, {
+    category: 'footer'
+  , description: 'parser output'
+  }, async (t) => {
     const result = parser.parse(COMMIT)
 
-    const footer = result.children.find((child) => {
-      return child.type === 'footer'
-    })
+    const footer = select('footer', result)
     t.ok(footer, 'should have footer section')
     t.ok(Array.isArray(footer.children), 'footer should have children')
     t.equal(footer.children.length, 2, 'footer should have 2 trailers')
 
-    // First trailer: BREAKING CHANGE
-    const breaking_trailer = footer.children[0]
-    t.equal(breaking_trailer.type, 'trailer', 'should have trailer')
-    t.equal(breaking_trailer.breaking, true, 'BREAKING CHANGE should be breaking')
+    t.test('trailers', async (t) => {
+      t.test('breaking change', async (t) => {
+        const trailer = footer.children[0]
+        t.match(trailer, {
+          type: 'trailer'
+        , breaking: true
+        }, 'BREAKING CHANGE marks node breaking=true')
 
-    const breaking_key = breaking_trailer.children.find((child) => {
-      return child.type === 'trailerkey'
-    })
-    t.ok(breaking_key, 'should have trailerkey for BREAKING CHANGE')
+        t.match(select('trailerkey text', trailer), {
+          type: 'text'
+        , value: 'BREAKING CHANGE'
+        }, 'trailer key text')
 
-    const breaking_value = breaking_trailer.children.find((child) => {
-      return child.type === 'trailervalue'
-    })
-    t.ok(breaking_value, 'should have trailervalue for BREAKING CHANGE')
+        t.match(select('trailervalue text', trailer), {
+          type: 'text'
+        , value: 'this is a breaking change'
+        }, 'trailer value text')
 
-    // Extract text from trailervalue
-    function extract_text(node) {
-      if (node.type === 'text') {
-        return node.value
-      }
-      if (node.type === 'issueReference') {
-        return node.value
-      }
-      if (node.children) {
-        return node.children.map(extract_text).join('')
-      }
-      return ''
-    }
-    const breaking_value_text = extract_text(breaking_value).trim()
-    t.equal(
-      breaking_value_text,
-      'this is a breaking change',
-      'BREAKING CHANGE value should match'
-    )
-
-    // Second trailer: Fixes
-    const fixes_trailer = footer.children[1]
-    t.equal(fixes_trailer.type, 'trailer', 'should have Fixes trailer')
-    t.equal(fixes_trailer.breaking, false, 'Fixes should not be breaking')
-
-    const fixes_key = fixes_trailer.children.find((child) => {
-      return child.type === 'trailerkey'
-    })
-    t.ok(fixes_key, 'should have trailerkey for Fixes')
-
-    const fixes_value = fixes_trailer.children.find((child) => {
-      return child.type === 'trailervalue'
-    })
-    t.ok(fixes_value, 'should have trailervalue for Fixes')
-
-    // Check for issue reference in Fixes value
-    const has_issue_ref = fixes_value.children.some((child) => {
-      return child.type === 'issueReference'
-    })
-    t.ok(has_issue_ref, 'Fixes value should have issue reference')
-  })
-
-  t.test('should correctly separate body and footer', async (t) => {
-    const result = parser.parse(COMMIT)
-
-    const body = result.children.find((child) => {
-      return child.type === 'body'
-    })
-    const footer = result.children.find((child) => {
-      return child.type === 'footer'
-    })
-
-    t.ok(body, 'should have body')
-    t.ok(footer, 'should have footer')
-
-    // Extract body text
-    function extract_text(node) {
-      if (node.type === 'text') {
-        return node.value
-      }
-      if (node.children) {
-        return node.children.map(extract_text).join('')
-      }
-      return ''
-    }
-    const body_text = body.children.map(extract_text).join('\n').trim()
-
-    // Body should NOT contain footer content
-    t.notOk(
-      body_text.includes('BREAKING CHANGE:'),
-      'body should not contain footer trailers'
-    )
-    t.notOk(
-      body_text.includes('Fixes:'),
-      'body should not contain Fixes trailer'
-    )
-
-    // Footer should have the trailers
-    const has_breaking = footer.children.some((trailer) => {
-      return trailer.breaking === true
-    })
-    t.ok(has_breaking, 'footer should have BREAKING CHANGE trailer')
-
-    const has_fixes = footer.children.some((trailer) => {
-      const key_node = trailer.children.find((child) => {
-        return child.type === 'trailerkey'
       })
-      if (!key_node) return false
-      return key_node.children.some((child) => {
-        return child.value === 'Fixes'
+
+      t.test('simple Git trailer', async (t) => {
+        const trailer = footer.children[1]
+        t.equal(trailer.type, 'trailer', 'should have Fixes trailer')
+        t.equal(trailer.breaking, false, 'Fixes should not be breaking')
+
+        const key = select('trailerkey', trailer)
+        const value = select('trailervalue', trailer)
+
+        t.ok(key, 'should have trailerkey for Fixes')
+        t.ok(value, 'should have trailervalue for Fixes')
+
+        t.test('issue reference', async (t) => {
+          t.ok(select('issueReference', value), {
+            type: 'issueReference'
+          , value: '#1'
+          , id: 1
+          , prefix: '#'
+          }, 'Fixes value should have issue reference')
+        })
       })
     })
-    t.ok(has_fixes, 'footer should have Fixes trailer')
+
   })
 })
 
