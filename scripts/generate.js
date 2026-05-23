@@ -11,10 +11,10 @@
  * - open the "conventional-commit-grammar-diagrams.html" file in your browser
  */
 
-const path = require('path')
-const fs = require('fs')
+const path = require('node:path')
+const fs = require('node:fs')
 const {createSyntaxDiagramsCode} = require('chevrotain')
-const {ConventionalCommitParser} = require('../lib/parser.js')
+const {ConventionalCommitParser} = require('../lib/cast/parser.js')
 
 /**
  * Generate HTML file with railroad diagrams for the conventional commit grammar
