@@ -2,7 +2,11 @@
 
 This document provides implementation guidance and validation examples for the CAST (Conventional Commit Abstract Syntax Tree) specification.
 
-## Round-trip Conversion Examples
+## Design Philosophy
+
+**CAST is designed for semantic understanding, not source reconstruction.** The output tree provides a high-level representation of the commit message structure with normalized whitespace and omitted separator tokens (commas, whitespace). For exact source reconstruction, use the original CST (Concrete Syntax Tree) from Chevrotain.
+
+## Parsing Examples
 
 ### Example 1: Simple Feature Commit
 
@@ -30,7 +34,7 @@ feat: add user authentication
 }
 ```
 
-**Round-trip Output:**
+**Semantic Output:**
 ```
 feat: add user authentication
 ```
@@ -65,7 +69,7 @@ feat(api)!: send email when product shipped
 }
 ```
 
-**Round-trip Output:**
+**Semantic Output:**
 ```
 feat(api)!: send email when product shipped
 ```
@@ -139,7 +143,7 @@ Refs: #123
 }
 ```
 
-**Round-trip Output:**
+**Semantic Output:**
 ```
 fix: prevent racing of requests
 
@@ -241,7 +245,7 @@ Resolves: GH-101
 }
 ```
 
-**Round-trip Output:**
+**Semantic Output:**
 ```
 feat(foo)!: this is a breaking change
 
@@ -389,13 +393,33 @@ Resolves: #123
 
 ## Implementation Considerations
 
-### 1. Whitespace Preservation
+### 1. Whitespace and Comma Normalization
 
-**Critical:** Leading and trailing whitespace in text nodes must be preserved exactly as it appears in the source.
+**Note:** The CAST output is designed for semantic understanding, not exact source reconstruction. The original CST (Concrete Syntax Tree) from Chevrotain is available for reconstruction purposes.
 
-- Description text includes the leading space after the colon
-- Trailer values include the leading space after the colon
-- Body text preserves all internal whitespace and line breaks
+**Whitespace Handling:**
+- Whitespace tokens are marked as `Lexer.SKIPPED` in the lexer and automatically filtered out
+- Multiple consecutive spaces are normalized to single spaces in text output
+- Leading and trailing spaces are trimmed from text values
+- Line breaks in body text are preserved as separate line nodes
+- Position information spans from first to last token, ignoring whitespace gaps
+
+**Comma Handling:**
+- Comma tokens are marked as `Lexer.SKIPPED` in the lexer and automatically filtered out
+- Commas act as separators (like whitespace) and do not appear in the semantic output
+- In scopes: `feat(one,two)` and `feat(one, two)` both produce normalized text
+- In trailers: Issue references can be comma-separated or whitespace-separated
+- Commas are not represented as nodes in the AST
+
+**Examples:**
+```js
+// Input: "feat(api,  auth):  add   user"
+// Output scope value: "api auth" (normalized)
+// Output description value: "add user" (normalized)
+
+// Input: "Fixes: #123, #456"
+// Output: [issue(#123), issue(#456)] (commas omitted)
+```
 
 ### 2. Issue Reference Detection
 
@@ -738,4 +762,4 @@ function addIssueReference(tree) {
 }
 ```
 
-This implementation guide ensures that CAST provides a robust foundation for programmatic manipulation of conventional commit messages while maintaining perfect fidelity to the original text through round-trip conversion.
+This implementation guide ensures that CAST provides a robust foundation for programmatic manipulation and semantic understanding of conventional commit messages. For exact source reconstruction, use the original CST (Concrete Syntax Tree) from Chevrotain.
