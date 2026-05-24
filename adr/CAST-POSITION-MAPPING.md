@@ -253,7 +253,7 @@ function parseTrailerValue(token) {
     
     // Add issue reference
     children.push({
-      type: 'issueReference',
+      type: 'issuererence',
       value: match[0],
       prefix: match[1],
       id: parseInt(match[2], 10),

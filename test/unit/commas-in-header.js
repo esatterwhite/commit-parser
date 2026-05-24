@@ -153,23 +153,23 @@ test('commas in header components', async (t) => {
       , value: 'Closes'
       }, 'trailer key')
 
-      const issue_refs = selectAll('issueReference', trailer)
+      const issue_refs = selectAll('issuererence', trailer)
       t.equal(issue_refs.length, 3, 'should have three issue references')
 
       t.match(issue_refs[0], {
-        type: 'issueReference'
+        type: 'issuererence'
       , prefix: '#'
       , id: 1
       }, 'first issue reference')
 
       t.match(issue_refs[1], {
-        type: 'issueReference'
+        type: 'issuererence'
       , prefix: '#'
       , id: 2
       }, 'second issue reference')
 
       t.match(issue_refs[2], {
-        type: 'issueReference'
+        type: 'issuererence'
       , prefix: '#'
       , id: 3
       }, 'third issue reference')

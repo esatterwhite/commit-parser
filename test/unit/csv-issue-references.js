@@ -39,7 +39,7 @@ Fixes: #1, #2, #3`
 
     // Verify all children are issue references
     const issue_refs = trailer_value.children.filter((child) => {
-      return child.type === 'issueReference'
+      return child.type === 'issuererence'
     })
     t.equal(issue_refs.length, 3, 'should have three issue references')
     t.equal(issue_refs[0].value, '#1', 'first issue reference')
@@ -78,7 +78,7 @@ Fixes: #100`
     t.equal(trailer_value.children.length, 1, 'should have one child')
 
     const issue_ref = trailer_value.children[0]
-    t.equal(issue_ref.type, 'issueReference', 'should be issue reference')
+    t.equal(issue_ref.type, 'issuererence', 'should be issue reference')
     t.equal(issue_ref.value, '#100', 'issue reference value')
   })
 
@@ -106,13 +106,13 @@ Random: some text and #200 more text`
     t.ok(trailer_value, 'should have trailervalue')
     t.equal(trailer_value.children.length, 3, 'should have three children')
 
-    // Verify structure: [text, issueReference, text]
+    // Verify structure: [text, issuererence, text]
     t.equal(trailer_value.children[0].type, 'text', 'first child is text')
     t.equal(trailer_value.children[0].value, 'some text and', 'first text value')
 
     t.equal(
       trailer_value.children[1].type
-    , 'issueReference'
+    , 'issuererence'
     , 'second child is issue reference'
     )
     t.equal(trailer_value.children[1].value, '#200', 'issue reference value')
@@ -139,7 +139,7 @@ Fixes: #10 , #20 , #30`
     t.equal(trailer_value.children.length, 3, 'should have three issue references')
 
     const issue_refs = trailer_value.children.filter((child) => {
-      return child.type === 'issueReference'
+      return child.type === 'issuererence'
     })
     t.equal(issue_refs.length, 3, 'should have three issue references')
     t.equal(issue_refs[0].value, '#10', 'first issue reference')
@@ -171,7 +171,7 @@ Fixes: #5,#6,#7`
     t.equal(trailer_value.children.length, 3, 'should have three issue references')
 
     const issue_refs = trailer_value.children.filter((child) => {
-      return child.type === 'issueReference'
+      return child.type === 'issuererence'
     })
     t.equal(issue_refs.length, 3, 'should have three issue references')
     t.equal(issue_refs[0].value, '#5', 'first issue reference')
@@ -198,7 +198,7 @@ Fixes: item 1, item 2, and #100`
     t.ok(trailer_value.children.length >= 2, 'should have at least two children')
 
     const issue_refs = trailer_value.children.filter((child) => {
-      return child.type === 'issueReference'
+      return child.type === 'issuererence'
     })
     t.equal(issue_refs.length, 1, 'should have one issue reference')
     t.equal(issue_refs[0].value, '#100', 'issue reference value')
@@ -229,7 +229,7 @@ Resolves: #10, #20`
       return child.type === 'trailervalue'
     })
     const fixes_refs = fixes_value.children.filter((child) => {
-      return child.type === 'issueReference'
+      return child.type === 'issuererence'
     })
     t.equal(fixes_refs.length, 3, 'Fixes should have three issue references')
 
@@ -239,7 +239,7 @@ Resolves: #10, #20`
       return child.type === 'trailervalue'
     })
     const resolves_refs = resolves_value.children.filter((child) => {
-      return child.type === 'issueReference'
+      return child.type === 'issuererence'
     })
     t.equal(resolves_refs.length, 2, 'Resolves should have two issue references')
   })
@@ -265,7 +265,7 @@ Fixes: #1, and nothing, #2, and something else`
     t.equal(trailer_value.children.length, 4, 'should have four children')
 
     // First issue reference
-    t.equal(trailer_value.children[0].type, 'issueReference', 'first child is issue')
+    t.equal(trailer_value.children[0].type, 'issuererence', 'first child is issue')
     t.equal(trailer_value.children[0].value, '#1', 'first issue is #1')
 
     // First text node - should NOT contain commas
@@ -281,7 +281,7 @@ Fixes: #1, and nothing, #2, and something else`
     )
 
     // Second issue reference
-    t.equal(trailer_value.children[2].type, 'issueReference', 'third child is issue')
+    t.equal(trailer_value.children[2].type, 'issuererence', 'third child is issue')
     t.equal(trailer_value.children[2].value, '#2', 'second issue is #2')
 
     // Second text node - should NOT contain commas

@@ -134,8 +134,8 @@ test('free-form body parsing', async (t) => {
         t.ok(value, 'should have trailervalue for Fixes')
 
         t.test('issue reference', async (t) => {
-          t.ok(select('issueReference', value), {
-            type: 'issueReference'
+          t.ok(select('issuererence', value), {
+            type: 'issuererence'
           , value: '#1'
           , id: 1
           , prefix: '#'
