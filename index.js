@@ -14,13 +14,10 @@ module.exports = {
  * @returns {object} Parsed commit data as CAST AST
  */
 function parse(commit_message, options = {}) {
-  // Merge with defaults
-  const config = {
+  // pre-chunk + parse approach for better context awareness
+  return CommitParser.parse(commit_message, {
     notesPhrase: ['BREAKING CHANGE'] // Default phrases
   , ...options
-  }
-
-  // Use the new pre-chunking approach to avoid "Redundant input, expecting EOF" errors
-  return CommitParser.parse(commit_message, config)
+  })
 }
 
