@@ -46,3 +46,4 @@ Is to build a parser for parsing commit messages that follow the conventional co
 - all code should have tests and full coverage. always run tests (`npm test`) and ensure they all pass before concluding any pending task.
 - tap test cases should use the async test function callback, never test.plan() and test.end() functions
 
+CRITICAL: When choosing a tool or path, you MUST output a valid, explicit, string filename. Never omit the 'path' parameter or leave it blank.
