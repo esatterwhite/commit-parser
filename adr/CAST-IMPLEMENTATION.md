@@ -133,7 +133,7 @@ Refs: #123
           children: [
             {type: 'trailerToken', value: 'Refs'},
             {type: 'trailerValue', children: [
-              {type: 'issuererence', value: '#123', prefix: '#', id: 123}
+              {type: 'issuereference', value: '#123', prefix: '#', id: 123}
             ]}
           ]
         }
@@ -226,7 +226,7 @@ Resolves: GH-101
           children: [
             {type: 'trailerToken', value: 'See'},
             {type: 'trailerValue', children: [
-              {type: 'issuererence', value: '#100', prefix: '#', id: 100}
+              {type: 'issuereference', value: '#100', prefix: '#', id: 100}
             ]}
           ]
         },
@@ -235,7 +235,7 @@ Resolves: GH-101
           children: [
             {type: 'trailerToken', value: 'Resolves'},
             {type: 'trailerValue', children: [
-              {type: 'issuererence', value: 'GH-101', prefix: 'GH-', id: 101}
+              {type: 'issuereference', value: 'GH-101', prefix: 'GH-', id: 101}
             ]}
           ]
         }
@@ -370,7 +370,7 @@ Resolves: #123
               },
               children: [
                 {
-                  type: 'issuererence',
+                  type: 'issuereference',
                   value: '#123',
                   prefix: '#',
                   id: 123,
@@ -436,11 +436,11 @@ Issue references should be detected within trailer values and represented as sep
 {
   type: 'trailerValue',
   children: [
-    {type: 'issuererence', value: '#100', prefix: '#', id: 100},
+    {type: 'issuereference', value: '#100', prefix: '#', id: 100},
     {type: 'text', value: ', '},
-    {type: 'issuererence', value: '#200', prefix: '#', id: 200},
+    {type: 'issuereference', value: '#200', prefix: '#', id: 200},
     {type: 'text', value: ', and '},
-    {type: 'issuererence', value: 'GH-300', prefix: 'GH-', id: 300}
+    {type: 'issuereference', value: 'GH-300', prefix: 'GH-', id: 300}
   ]
 }
 ```
@@ -613,7 +613,7 @@ Issue references within trailer values require substring position calculation:
   },
   children: [
     {
-      type: 'issuererence',
+      type: 'issuereference',
       value: '#123',
       prefix: '#',
       id: 123,
@@ -631,7 +631,7 @@ Issue references within trailer values require substring position calculation:
       }
     },
     {
-      type: 'issuererence',
+      type: 'issuereference',
       value: '#456',
       prefix: '#',
       id: 456,
@@ -755,7 +755,7 @@ function addIssueReference(tree) {
     children: [
       {type: 'trailerToken', value: 'Relates-to'},
       {type: 'trailerValue', children: [
-        {type: 'issuererence', value: '#JIRA-123', prefix: '#', id: 'JIRA-123'}
+        {type: 'issuereference', value: '#JIRA-123', prefix: '#', id: 'JIRA-123'}
       ]}
     ]
   })

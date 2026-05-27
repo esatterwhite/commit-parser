@@ -130,7 +130,7 @@ Co-authored-by: Jane Doe <jane@example.com>
 ### Text Extraction
 
 All text content is extracted from the CAST AST by:
-1. Traversing text and issuererence nodes
+1. Traversing text and issuereference nodes
 2. Concatenating their `value` fields
 3. Preserving whitespace and formatting
 

@@ -434,7 +434,7 @@ For example:
   type: 'line',
   children: [
     {type: 'text', value: 'This fixes issue '},
-    {type: 'issuererence', value: '#123', prefix: '#', id: 123},
+    {type: 'issuereference', value: '#123', prefix: '#', id: 123},
     {type: 'text', value: ' in the parser'}
   ]
 }
@@ -463,7 +463,7 @@ For example:
 
 ```idl
 interface IssueReference <: Literal {
-  type: 'issuererence'
+  type: 'issuereference'
   value: string
   prefix: string
   id: number
@@ -478,7 +478,7 @@ For example:
 
 ```js
 {
-  type: 'issuererence',
+  type: 'issuereference',
   value: '#123',
   prefix: '#',
   id: 123
@@ -714,7 +714,7 @@ AST:
           children: [
             {type: 'trailerkey', children: [{type: 'text', value: 'Resolves'}]},
             {type: 'trailervalue', children: [
-              {type: 'issuererence', value: '#123', prefix: '#', id: 123}
+              {type: 'issuereference', value: '#123', prefix: '#', id: 123}
             ]}
           ]
         },
