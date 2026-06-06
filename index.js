@@ -1,6 +1,6 @@
 'use strict'
 
-const CommitParser = require('./lib/parse-chunks.js')
+const CommitParser = require('./lib/commit-parser.js')
 
 module.exports = {
   parse: parse
