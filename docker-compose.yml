@@ -1,0 +1,42 @@
+services:
+  postgresql:
+    image: pgvector/pgvector:pg18-trixie
+    environment:
+      POSTGRES_PASSWORD: abc123
+      POSTGRES_USER: crush
+      POSTGRES_DB: mcp_memory
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    ports:
+      - 5432:5432
+
+  pgadmin:
+    image: dpage/pgadmin4:9.15
+    environment:
+      PGADMIN_DEFAULT_EMAIL: eric@mail.com
+      PGADMIN_DEFAULT_PASSWORD: abc123
+      PGADMIN_LISTEN_PORT: 5050
+    ports:
+      - 5050:5050
+    depends_on:
+      postgresql:
+        condition: service_healthy
+
+  sqlite-memory:
+    image: cunicopia/local-memory-mcp:postgres
+    ports:
+      - 9000:9000
+    command: fastmcp run --host 0.0.0.0 --transport streamable-http --port 9000 src/postgres_memory_server.py
+    restart: unless-stopped
+    environment:
+      OLLAMA_API_URL: http://172.26.160.1:11434
+      POSTGRES_HOST: postgresql
+      POSTGRES_DB: mcp_memory
+      POSTGRES_USER: crush
+      POSTGRES_PASSWORD: abc123
+    depends_on:
+      postgresql:
+        condition: service_healthy

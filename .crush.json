@@ -1,0 +1,70 @@
+{
+  "$schema": "https://charm.land/crush.json",
+  "options": {
+    "initialize_as": "./.ai/context.md",
+    "disable_metrics": true,
+    "skills_paths": [
+      "./.ai/skills"
+    ]
+  },
+  "lsp": {
+    "go": {
+      "command": "gopls",
+      "env": {
+        "GOTOOLCHAIN": "go1.26.3"
+      }
+    },
+    "typescript": {
+      "command": "typescript-language-server",
+      "args": ["--stdio"]
+    },
+    "javascript": {
+      "command": "typescript-language-server",
+      "args": ["--stdio"]
+    }
+  },
+  "mcp": {
+    "local-memory": {
+      "type": "http",
+      "url": "http://0.0.0.0:9000/mcp/",
+      "timeout": 120
+    },
+    "duckduckgo-search": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "ghcr.io/nickclyde/duckduckgo-mcp-server:latest"
+      ]
+    }
+  },
+  "providers": {
+    "ollama": {
+      "name": "Ollama",
+      "base_url": "http://172.26.160.1:11434/v1",
+      "type": "openai-compat",
+      "models": [
+        {
+          "name": "Gemma 4 31b",
+          "id": "gemma4:31b",
+          "context_window": 256000,
+          "default_max_tokens": 20000
+        },
+        {
+          "name": "Qwen 3.6 (35b Dense)",
+          "id": "qwen3.6:35b",
+          "context_window": 256000,
+          "default_max_tokens": 20000
+        },
+        {
+          "name": "GLM 4.7 Flash",
+          "id": "glm-4.7-flash:latest",
+          "context_window": 256000,
+          "default_max_tokens": 20000
+        }
+      ]
+    }
+  }
+}
