@@ -151,7 +151,7 @@ header_mode (default)
 description_mode
     ↓ (BLANK_LINE)
 body_or_footer_mode
-    ↓ (FOOTER_TOKEN or BREAKING_CHANGE_TOKEN)
+    ↓ (FOOTER_TOKEN or BREAKING_CHANGE)
 footer_separator_mode
     ↓ (FOOTER_COLON)
 footer_value_mode
@@ -285,13 +285,13 @@ Chevrotain processes tokens in the order they're defined in the array. More spec
 
 ```javascript
 const all_tokens = [
-  BREAKING_CHANGE_TOKEN,  // More specific
+  BREAKING_CHANGE,  // More specific
   FOOTER_TOKEN,           // More general
   // ...
 ]
 ```
 
-**Why**: `BREAKING_CHANGE_TOKEN` would match the pattern for `FOOTER_TOKEN`, so it needs to be checked first. We also mark it with `longer_alt: FOOTER_TOKEN` to help Chevrotain optimize.
+**Why**: `BREAKING_CHANGE` would match the pattern for `FOOTER_TOKEN`, so it needs to be checked first. We also mark it with `longer_alt: FOOTER_TOKEN` to help Chevrotain optimize.
 
 ---
 
@@ -379,7 +379,7 @@ class ConventionalCommitVisitor extends BaseCstVisitor {
    ```
    BREAKING CHANGE: description
    ```
-   Initially failed because BREAKING_CHANGE_TOKEN didn't push to footer_separator_mode.
+   Initially failed because BREAKING_CHANGE didn't push to footer_separator_mode.
 
 ### Testing Strategy
 
