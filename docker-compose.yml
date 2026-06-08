@@ -1,6 +1,7 @@
 services:
   postgresql:
     image: pgvector/pgvector:pg18-trixie
+    restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: abc123
       POSTGRES_USER: crush
@@ -10,11 +11,10 @@ services:
       timeout: 45s
       interval: 10s
       retries: 10
-    ports:
-      - 5432:5432
 
   pgadmin:
     image: dpage/pgadmin4:9.15
+    restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: eric@mail.com
       PGADMIN_DEFAULT_PASSWORD: abc123
@@ -25,7 +25,7 @@ services:
       postgresql:
         condition: service_healthy
 
-  sqlite-memory:
+  mcp-memory:
     image: cunicopia/local-memory-mcp:postgres
     ports:
       - 9000:9000
